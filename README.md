@@ -1,3 +1,5 @@
+# REMINDER: as stated in the 'about' section, this is a deprecated repo, & I do not check it very often, nor do I actively maintain it.  Please feel free to fork, copy/paste, etc as you see fit.  You are welcome to submit PRs, but please do so with the knowledge that I might not see the PR for a very long time.
+
 # node-red-contrib-send-multipart
 This is a node-red node for posting http(s) requests containing files as multipart formData. Currently a work in progress.
 As of now this node is only looking for files. However, there are future plans to handle all multipart/form-data.
