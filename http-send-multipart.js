@@ -11,9 +11,6 @@ module.exports = function(RED) {
         // Setup node
         RED.nodes.createNode(this, n);
         var node = this;
-        var nodeUrl = n.url;
-
-        var isTemplatedUrl = (nodeUrl || "").indexOf("{{") != -1;
 
         this.ret = n.ret || "txt"; // default return type is text
         if (RED.settings.httpRequestTimeout) {
@@ -24,6 +21,13 @@ module.exports = function(RED) {
 
         // 1) Process inputs to Node
         this.on("input", function(msg) {
+
+			// Load 'url' parameter from node and try msg as failover
+	        var nodeUrl = n.url;
+			if(!nodeUrl) {
+				nodeUrl = msg.url;
+			}
+			var isTemplatedUrl = (nodeUrl || "").indexOf("{{") != -1;
 
             // Object extend
             function extend(target) {
@@ -91,9 +95,16 @@ module.exports = function(RED) {
                     'Content-Type': 'multipart/form-data'
                 };
                 if (msg.headers) {
-                    var headers = extend({}, headers, msg.headers);
+                    headers = extend({}, headers, msg.headers);
                 }
                 msg['request-headers'] = headers;
+
+                var fName = filepath;
+                if(n.filename) {
+                    fName = n.filename;
+                } else if (!msg.filename) {
+                    fName = msg.filename;
+                }
 
                 var options = {
                     method: 'POST',
@@ -103,7 +114,7 @@ module.exports = function(RED) {
                         file: {
                             value: fs.createReadStream(filepath),
                             options: {
-                                filename: filepath,
+                                filename: fName,
                                 contentType: null
                             }
                         },
@@ -132,8 +143,8 @@ module.exports = function(RED) {
                     }
                     msg.payload = body;
                     msg.statusCode = resp.statusCode || resp.status;
-                    msg.['http-send-multipart-headers'] = resp.headers;
-                    msg.['http-send-multipart-options'] = options;
+                    msg.headers = resp.headers;
+                    msg.options = options;
 
                     if (node.ret !== "bin") {
                         msg.payload = body.toString('utf8'); // txt
